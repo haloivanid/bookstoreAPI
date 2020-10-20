@@ -1,0 +1,19 @@
+{
+  "name": "bookstoreapi",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haloivanid/bookstoreAPI.git"
+  },
+  "author": "haloivan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/haloivanid/bookstoreAPI/issues"
+  },
+  "homepage": "https://github.com/haloivanid/bookstoreAPI#readme"
+}
