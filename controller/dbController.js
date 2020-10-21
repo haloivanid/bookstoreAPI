@@ -1,6 +1,13 @@
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 
+//** import model */
+const booksModel = require('../model/booksModel')
+const categoriesModel = require('../model/categoriesModel')
+const inventoriesModel = require('../model/inventoriesModel')
+const publisherModel = require('../model/publisherModel')
+const storesModel = require('../model/storesModel')
+
 // ⚠️ propietary code, don't change it ⚠️
 // this code will create db.json automatically if your folder doesn't have one
 // courious? 👀 search for "IIFE function"
@@ -18,9 +25,11 @@ let db;
     const adapter = new FileSync('db.json')
     db = low(adapter)
     db.defaults({
-      stores: [],
+      books: [],
+      categories: [],
       inventories: [],
-      goods: []
+      publisher: [],
+      stores: []
     })
       .write()
   } catch (error) {
@@ -28,12 +37,19 @@ let db;
   }
 })()
 
-function shapeObject(input, model) {
+function shapeObject(tableName, input) {
+  const model = {
+    "books": booksModel,
+    "categories": categoriesModel,
+    "inventories": inventoriesModel,
+    "publisher": publisherModel,
+    "stores": storesModel,
+  }
   const result = {}
-  const modelCounter = model.length
+  const modelCounter = model[tableName].length
   let counter = 0
   for (const namaKey in input) {
-    if (model.includes(namaKey)) {
+    if (model[tableName].includes(namaKey)) {
       result[namaKey] = input[namaKey]
       counter++
     }
@@ -51,11 +67,11 @@ function shapeObject(input, model) {
  */
 function get(tableName, query) {
   if (query && Object.keys(query).length) {
+    console.log(query);
     const data = db
       .get(tableName)
       .find(query)
       .value()
-    console.log(data);
     return data
   }
   return db
@@ -70,23 +86,16 @@ function get(tableName, query) {
  * @param {Object} body inserted data
  */
 function add(tableName, body) {
-  let shapedBody
-
-  if (tableName == 'goods') {
-    shapedBody = shapeObject(body, goodsModel)
+  const bodyValidator = shapeObject(tableName, body)
+  const isId = get(tableName, { id: body.id })
+  if (isId != undefined) {
+    return false
   }
-  if (tableName == 'inventories') {
-    shapedBody = shapeObject(body, inventoriesModel)
-  }
-  if (tableName == 'stores') {
-    shapedBody = shapeObject(body, storesModel)
-  }
-
-  if (!shapedBody) {
+  if (!bodyValidator) {
     return false
   }
   return db.get(tableName)
-    .push(shapedBody)
+    .push(bodyValidator)
     .write()
 }
 
@@ -97,10 +106,19 @@ function add(tableName, body) {
  * @param {Object} body updated data
  */
 function edit(tableName, id, body) {
-  const parsedId = parseInt(id)
-  db.get(tableName)
-    .find({ id: parsedId })
-    .assign(body)
+  const bodySchema = body
+  bodySchema.id = id
+  const isId = get(tableName, { id })
+  const bodyValidator = shapeObject(tableName, bodySchema)
+  if (isId == undefined) {
+    return false
+  }
+  if (!bodyValidator) {
+    return false
+  }
+  return db.get(tableName)
+    .find({ id })
+    .assign(bodyValidator)
     .write()
 }
 
@@ -110,9 +128,12 @@ function edit(tableName, id, body) {
  * @param {String|Number} id data id
  */
 function remove(tableName, id) {
-  const parsedId = parseInt(id)
-  db.get(tableName)
-    .remove({ id: parsedId })
+  const isId = get(tableName, { id })
+  if (isId == undefined) {
+    return false
+  }
+  return db.get(tableName)
+    .remove({ id })
     .write()
 }
 
