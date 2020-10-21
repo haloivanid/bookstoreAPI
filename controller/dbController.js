@@ -7,6 +7,7 @@ const categoriesModel = require('../model/categoriesModel')
 const inventoriesModel = require('../model/inventoriesModel')
 const publisherModel = require('../model/publisherModel')
 const storesModel = require('../model/storesModel')
+const usersModel = require('../model/usersModel')
 
 // ⚠️ propietary code, don't change it ⚠️
 // this code will create db.json automatically if your folder doesn't have one
@@ -29,7 +30,8 @@ let db;
       categories: [],
       inventories: [],
       publisher: [],
-      stores: []
+      stores: [],
+      users: []
     })
       .write()
   } catch (error) {
@@ -44,6 +46,7 @@ function shapeObject(tableName, input) {
     "inventories": inventoriesModel,
     "publisher": publisherModel,
     "stores": storesModel,
+    "users": usersModel
   }
   const result = {}
   const modelCounter = model[tableName].length
@@ -67,7 +70,6 @@ function shapeObject(tableName, input) {
  */
 function get(tableName, query) {
   if (query && Object.keys(query).length) {
-    console.log(query);
     const data = db
       .get(tableName)
       .find(query)
@@ -87,10 +89,10 @@ function get(tableName, query) {
  */
 function add(tableName, body) {
   const bodyValidator = shapeObject(tableName, body)
-  const isId = get(tableName, { id: body.id })
-  if (isId != undefined) {
-    return false
-  }
+  // const isId = get(tableName, { id: body.id })
+  // if (isId != undefined) {
+  //   return false
+  // }
   if (!bodyValidator) {
     return false
   }
